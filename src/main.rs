@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use std::fs;
 use iter_tools::Itertools;
 use regex::Regex;
 
-fn day1() -> u32 {
+fn day1() -> (u32, u32) {
     let contents = fs::read_to_string("inputs/day1.txt").expect("failed to read file");
     let lines: Vec<&str> = contents.split("\n").collect();
     let halves_str: Vec<(&str, &str)> =
@@ -27,9 +28,31 @@ fn day1() -> u32 {
         diff += l.abs_diff(*r);
     });
     
-    diff
+    let mut occurrences: HashMap<u32, u32> = HashMap::new();
+    for n in &halves.0 {
+        if let Ok(pos) = halves.1.binary_search(n) {
+            let mut occ = 0u32;
+            let (l, r) = halves.1.split_at(pos);
+            for i in l.iter().rev() {
+                if i != n { break; }
+                occ += 1;
+            }
+            for i in r.iter() {
+                if i != n { break; }
+                occ += 1;
+            }
+            occurrences.insert(*n, occ);
+        }
+    }
+    
+    let mut similarity = 0u32;
+    occurrences.iter().for_each(|(k, v)| {
+        similarity += k * v;
+    });
+
+    (diff, similarity)
 }
 
 fn main() {
-    println!("Day 1: {}", day1());
+    println!("Day 1: {:?}", day1());
 }
